@@ -100,13 +100,15 @@ def cnv_2_csv(filename):
 dfs = {}
 dfname_back = ''
 
+filename = cnvs[-2]
 for filename in cnvs:
     pass
     dfname = filename.split('_')[1][-5:]
-    dfname = re.findall("SBE[\d]*",filename)[0] + '_' + dfname
+    dfname = re.findall("SBE[\d]{2}",filename)[0] + '_' + dfname
     if dfname == dfname_back:
         dfname = dfname + 'a' 
     print(dfname)
+    
     df = cnv_2_csv(filename)
     dfs.update({dfname:df})
     dfname_back = dfname
@@ -140,17 +142,10 @@ def compare(sbe,ctd):
         dic['sbe_tem'] = sbe.Temperature[idx2]
         dic['sbe_depth'] = sbe.Depth[idx2]
         dic['sbe_date'] = idx2
+    
         
-        temp = datetime.datetime.today().strftime("%Y-%m-%d %Hh%Mm%Ss")
-        f = open('./SBE_scan_report %s.txt'%temp,'a')
-        for aux in dic:
-            print(aux,dic[aux])   
-            f.write(aux)
-            f.write('=')
-            f.write(str(dic[aux]))
-            f.write('\n')
-        f.close()
-                
+        return dic
+               
         
     except Exception as e:
         print(e)
@@ -160,9 +155,22 @@ sbekeys = [aux for aux in dfs.keys() if "SBE37" in aux]
 ctdkeys = [aux for aux in dfs.keys() if "SBE19" in aux]
 
 for c in ctdkeys:
+    datetimename = datetime.datetime.today().strftime("%Y-%m-%d %Hh%Mm%Ss")
     for s in sbekeys:
         print("compare %s com %s"%(c,s))
-        compare(dfs[s],dfs[c])
+        dic = compare(dfs[s],dfs[c])
+        if dic:
+            
+            f = open('./SBE_scan_report %s.txt'%datetimename,'a')
+            f.write("compare %s com %s\n"%(c,s))
+            for aux in dic:
+                print(aux,dic[aux])   
+                f.write(aux)
+                f.write('=')
+                f.write(str(dic[aux]))
+                f.write('\n')
+            f.write("----------------------------------------\n")
+            f.close()
         print('----------------------------------------')
         
         
